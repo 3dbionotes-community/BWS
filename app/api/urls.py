@@ -2,6 +2,14 @@ from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 from api import views
 from django.conf import settings
+from django.http import HttpResponse
+
+### Endpoints calling function in this section
+from api.annotations import source_pfam as Pfam
+from api.annotations import source_smart as smart
+
+
+import json
 import debug_toolbar
 
 router = DefaultRouter()
@@ -17,6 +25,10 @@ router.register(r"modelentities", views.ModelEntityViewSet)
 
 
 urlpatterns = [
+    path("annotations/Pfam/Uniprot/<str:uniprotID>", Pfam.Uniprot),
+    path("annotations/SMART/Uniprot/<str:uniprotAc>", smart.sourceSmartFromUniprot),
+#    path("annotations/dbptm/Uniprot/<str:uniprotID>", Pfam.Uniprot),
+#lambda x,uniprotid: HttpResponse(json.dumps({"id":uniprotid}), content_type='application/json')),
     path("", include(router.urls)),
     path('complete/search', views.AutocompleteAPIView.as_view()),
     # Get version
