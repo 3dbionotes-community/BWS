@@ -9,6 +9,22 @@ from django.contrib import admin
 # Database Models for annotation endpoints#
 ###########################################
 
+class EnsemblAnnotation(models.Model):
+    geneName = models.CharField(max_length=30, blank=True, null=True, default="")
+    transcriptName = models.CharField(max_length=30, blank=True, null=True, default="")
+    start = models.IntegerField(null=True, blank=True)
+    end = models.IntegerField(null=True, blank=True)
+    type= models.CharField(max_length=30, blank=True, null=True, default="")
+
+    def __str__(self):
+        return f"{self.geneName}-{self.transcriptName}_{self.start}-{self.end}"
+
+class PFAMentity(models.Model):
+    pfamid = models.CharField(max_length=30, blank=True, null=True, default="")
+
+    def __str__(self):
+        return "pfam"
+
 # Model for SMART data
 class SMARTentity(models.Model):
      uniprotid = models.CharField(max_length=30, blank=True, null=True, default="")
@@ -21,4 +37,6 @@ class SMARTentity(models.Model):
      def __str__(self):
          return self.uniprotid
 
+admin.site.register(EnsemblAnnotation)
 admin.site.register(SMARTentity)
+admin.site.register(PFAMentity)

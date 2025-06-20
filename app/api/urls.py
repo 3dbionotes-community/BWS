@@ -7,6 +7,8 @@ from django.http import HttpResponse
 ### Endpoints calling function in this section
 from api.annotations import source_pfam as Pfam
 from api.annotations import source_smart as smart
+from api.annotations import source_ensembl_annotation as ensembl_annotation
+from api.annotations import source_ensembl_variations as ensembl_variations
 
 
 import json
@@ -27,6 +29,8 @@ router.register(r"modelentities", views.ModelEntityViewSet)
 urlpatterns = [
     path("annotations/Pfam/Uniprot/<str:uniprotID>", Pfam.Uniprot),
     path("annotations/SMART/Uniprot/<str:uniprotAc>", smart.sourceSmartFromUniprot),
+    path("annotation/ensembl/annotations/<str:ensemblid>", ensembl_annotation.getENSEMBLannotations),
+    path("annotation/ensembl/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
 #    path("annotations/dbptm/Uniprot/<str:uniprotID>", Pfam.Uniprot),
 #lambda x,uniprotid: HttpResponse(json.dumps({"id":uniprotid}), content_type='application/json')),
     path("", include(router.urls)),

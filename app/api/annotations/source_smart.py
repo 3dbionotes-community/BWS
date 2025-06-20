@@ -16,7 +16,7 @@ from .models import SMARTentity
 
 
 SMART_URL:str = "http://smart.embl.de/smart/batch.pl?TEXTONLY=1&INCLUDE_SIGNALP=1&IDS={}"
-logging.basicConfig(filename='/sys/stdout', level=logging.INFO)
+#logging.basicConfig(filename='/sys/stdout', level=logging.INFO)
 
 def _create_instace_of_SMARTentity(data: dict) -> SMARTentity:
     """
@@ -52,7 +52,7 @@ def _load_smart_from_db(uniprotAC:str) -> list[dict]:
 	"""
         query = SMARTentity.objects.filter(uniprotid=uniprotAC)
         query = [model_to_dict(result) for result in query]
-	# If no elements returned, then return None
+	    # If no elements returned, then return None
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally
         if (len(query)) == 0: 
@@ -107,6 +107,7 @@ def save_result_into_DB(out):
     """
 	Saves the results gotten from the external DB into de cache DB using the SMARTentity model
 
+    The data is cached once and then served to the user.
     """
     for element in out:
         smart = _create_instace_of_SMARTentity(element)
@@ -130,7 +131,7 @@ def sourceSmartFromUniprot(request, uniprotAc):
    # Note that if for some reason could not connect to the cache DB for read
    # But then can connect for write, duplicate elements might be recorded
    # Generally, if cached, it will take the info and not connect remotely
-   # If not cached, will get the infor from the remote db
+   # If not cached, will get the info from the remote db
    if out is None:
       out = download_smart_from_embl(uniprotAc)
       save_result_into_DB(out)
