@@ -27,7 +27,7 @@ router.register(r"modelentities", views.ModelEntityViewSet)
 
 
 urlpatterns = [
-    path("annotations/Pfam/Uniprot/<str:uniprotID>", Pfam.Uniprot),
+    path("annotations/Pfam/Uniprot/<str:uniprotID>", Pfam.source_PFAM),
     path("annotations/SMART/Uniprot/<str:uniprotAc>", smart.sourceSmartFromUniprot),
     path("annotation/ensembl/annotations/<str:ensemblid>", ensembl_annotation.getENSEMBLannotations),
     path("annotation/ensembl/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
