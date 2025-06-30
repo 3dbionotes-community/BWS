@@ -19,7 +19,7 @@ numpy==1.26.4
 packaging==24.2
 pandas==2.2.3
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.1.1
 pytz==2025.1
 PyYAML==6.0.1
 rcsbsearchapi==1.5.1
