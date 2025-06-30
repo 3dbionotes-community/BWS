@@ -1,5 +1,5 @@
 asgiref==3.8.1
-beautifulsoup4==4.13.3
+beautifulsoup4==4.13.4
 biopython==1.83
 bs4==0.0.2
 certifi==2025.1.31
@@ -11,7 +11,7 @@ django-debug-toolbar-force==0.2
 django-filter==25.1
 django-nine==0.2.7
 djangorestframework==3.14.0
-drf-yasg==1.21.9
+drf-yasg==1.21.10
 idna==3.7
 inflection==0.5.1
 mysqlclient==2.2.7
@@ -21,7 +21,7 @@ pandas==2.2.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2025.1
-PyYAML==6.0.1
+PyYAML==6.0.2
 rcsbsearchapi==1.5.1
 requests==2.31.0
 six==1.16.0
