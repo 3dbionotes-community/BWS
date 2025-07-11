@@ -9,10 +9,13 @@ import requests
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 
-from .models import SMARTentity
+from .models import EnsemblVariantEntry
 
 def _load_variants_from_DB(id):
-    return {}
+    data = EnsemblVariantEntry.object.filter(proteinID=uniprotAc)
+    if len(data) == 0:
+        return None
+    return data['data']
 
 def _save_variants_in_DB(id, variants):
     pass

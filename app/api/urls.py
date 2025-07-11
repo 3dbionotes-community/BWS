@@ -9,7 +9,10 @@ from api.annotations import source_pfam as Pfam
 from api.annotations import source_smart as smart
 from api.annotations import source_ensembl_annotation as ensembl_annotation
 from api.annotations import source_ensembl_variations as ensembl_variations
-
+from api.annotations import source_pdbredo as pdbredo
+from api.annotations import source_iedb as iedb
+from api.annotations import source_dbptm as dbtpm
+from api.annotations import source_biomuta as biomuta
 
 import json
 import debug_toolbar
@@ -31,8 +34,10 @@ urlpatterns = [
     path("annotations/SMART/Uniprot/<str:uniprotAc>", smart.sourceSmartFromUniprot),
     path("annotation/ensembl/annotations/<str:ensemblid>", ensembl_annotation.getENSEMBLannotations),
     path("annotation/ensembl/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
-#    path("annotations/dbptm/Uniprot/<str:uniprotID>", Pfam.Uniprot),
-#lambda x,uniprotid: HttpResponse(json.dumps({"id":uniprotid}), content_type='application/json')),
+    path("annotations/PDB_REDO/<str:pdbID>", pdbredo.source_PDBredo),
+    path("annotations/IEDB/Uniprot/<str:proteinID>", iedb.source_IEDB_from_DB),
+    path("annotations/dbptm/Uniprot/<str:uniprot_id>", dbtpm.source_Dbptm_from_Uniprot),
+    path("annotations/dbptm/biomuta/Uniprot/<str:uniprotAc>", biomuta.source_Biomuta_from_uniprot),
     path("", include(router.urls)),
     path('complete/search', views.AutocompleteAPIView.as_view()),
     # Get version
