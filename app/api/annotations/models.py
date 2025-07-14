@@ -70,6 +70,34 @@ class EnsemblVariantEntry(models.Model):
     def __str__(self):
         return self.geneID
 
+class epitope(models.Model):
+    epitope_id = models.DecimalField(max_digits=22, decimal_places=0)
+    description = models.CharField(max_length=535, blank=True, null=True, default="")
+    linear_peptide_seq = models.CharField(max_length=4000, blank=True, null=True, default="")
+    linear_peptide_modified_seq = models.CharField(max_length=4000, blank=True, null=True, default="")
+    linear_peptide_modification = models.CharField(max_length=85, blank=True, null=True, default="")
+    non_aa_source_id = models.DecimalField(max_digits=22, decimal_places=0)
+    disc_source_id = models.DecimalField(max_digits=22, decimal_places=0)
+    disc_region = models.CharField(max_length=4000, blank=True, null=True, default="")
+    disc_modification = models.CharField(max_length=85, blank=True, null=True, default="")
+    mc_region = models.CharField(max_length=85, blank=True, null=True, default="")
+    mc_mol1_source_id = models.DecimalField(max_digits=22, decimal_places=0)
+    mc_mol1_modification = models.CharField(max_length=85, blank=True, null=True, default="")
+    mc_mol2_source_id = models.DecimalField(max_digits=22, decimal_places=0)
+    mc_mol2_modification = models.CharField(max_length=85, blank=True, null=True, default="")
+
+    def __str__(self):
+        return self.epitopte_id
+
+class epitope_object(models.Model):
+    epitope_id = models.DecimalField(max_digits=22, decimal_places=0)
+    object_id = models.DecimalField(max_digits=22, decimal_places=0)
+    source_antigen_accession = models.CharField(max_length=85, blank=True, null=True, default="")
+    source_organism_org_id = models.DecimalField(max_digits=22, decimal_places=0)
+
+    def __str__(self):
+        return self.epitope_id
+
 class intrproentries(models.Model):
     proteinID = models.CharField(max_length=255, blank=True, null=True, default="")
     data = models.TextField(blank=True, default="")
@@ -78,6 +106,36 @@ class intrproentries(models.Model):
 
     def __str__(self):
         return self.proteinID
+
+class object(models.Model):
+
+    object_id = models.DecimalField(max_digits=22, decimal_places=0, primary_key=True)
+    reference_id = models.DecimalField(max_digits=22, decimal_places=0)
+    object_type = models.CharField(max_length=200)
+    object_sub_type = models.CharField(max_length=200, blank=True, null=True)
+    object_description = models.CharField(max_length=535, blank=True, null=True)
+    derivative_type = models.CharField(max_length=500, blank=True, null=True)
+    organism_id = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    organism2_id = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    region = models.CharField(max_length=1000, blank=True, null=True)
+    starting_position = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    ending_position = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    cell_name = models.CharField(max_length=85, blank=True, null=True)
+    cell_type = models.CharField(max_length=85, blank=True, null=True)
+    tissue_type = models.CharField(max_length=85, blank=True, null=True)
+    origin = models.CharField(max_length=85, blank=True, null=True)
+    mol1_seq = models.CharField(max_length=4000, blank=True, null=True)
+    mol1_modified_seq = models.CharField(max_length=4000, blank=True, null=True)
+    mol1_modification = models.CharField(max_length=85, blank=True, null=True)
+    mol1_source_id = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    mol2_modified_seq = models.CharField(max_length=4000, blank=True, null=True)
+    mol2_modification = models.CharField(max_length=85, blank=True, null=True)
+    mol2_source_id = models.DecimalField(max_digits=22, decimal_places=0, blank=True, null=True)
+    mult_chain_mol_name = models.CharField(max_length=85, blank=True, null=True)
+
+    def __str__(self):
+        return self.object_id
+
 
 class mobientries(models.Model):
     proteinID = models.CharField(max_length=255, blank=True, null=True, default="")
@@ -115,6 +173,15 @@ class PDBRedoEntry(models.Model):
     def __str__(self):
         return self.PDBID
 
+class PdbDatum(models.Model):
+    proteinID = models.CharField(max_length=255, blank=True, null=True, default="")
+    data = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+    updated_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+
+    def __str__(self):
+        return self.proteinID
+
 class PFAMentity(models.Model):
     proteinID = models.CharField(max_length=255, blank=True, null=True, default="")
     data = models.TextField(blank=True, default="")
@@ -133,6 +200,19 @@ class PhosphoEntries(models.Model):
     def __str__(self):
         return self.proteinID
 
+from django.db import models
+
+class InterproDatum(models.Model):
+    proteinId = models.CharField(max_length=255, null=True, blank=True)
+    data = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=False)
+    updated_at = models.DateTimeField(auto_now_add=False)
+
+    class Meta:
+        db_table = 'your_table_name'  # Replace with your actual table name
+
+    def __str__(self):
+        return f"{self.proteinId}"
 
 # Model for SMART data
 class SMARTentity(models.Model):
@@ -175,6 +255,8 @@ admin.site.register(dbptmentries)
 admin.site.register(ebifeaturesentries)
 admin.site.register(EnsemblAnnotation)
 admin.site.register(EnsemblVariantEntry)
+admin.site.register(epitope)
+admin.site.register(epitope_object)
 admin.site.register(intrproentries)
 admin.site.register(mobientries)
 admin.site.register(molprobityentries)

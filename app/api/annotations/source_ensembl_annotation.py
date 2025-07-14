@@ -28,13 +28,13 @@ def getENSEMBLfromDB(ensembleid):
     query = None
     try:
         """
-           Queries the database to get elements with the desired uniprotID
-           Then turns it into a dict (to be able to be returned as json
-           The behaviour varies depending on the query:
-		- 1 or more results -> returned in a dict
+            Queries the database to get elements with the desired uniprotID
+            Then turns it into a dict (to be able to be returned as json
+            The behaviour varies depending on the query:
+		    1 or more results -> returned in a dict
                 - 0 results -> returns None
                 - Error -> returns None and TODO: registers the error
-	"""
+	    """
         query = EnsemblAnnotation.objects.filter(geneName=ensembleid)
         query = [model_to_dict(result) for result in query]
 	    # If no elements returned, then return None
