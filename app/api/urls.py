@@ -13,6 +13,7 @@ from api.annotations import source_pdbredo as pdbredo
 from api.annotations import source_iedb as iedb
 from api.annotations import source_dbptm as dbtpm
 from api.annotations import source_biomuta as biomuta
+from api.annotations import source_dsysmap as dsysmap
 
 import json
 import debug_toolbar
@@ -38,6 +39,7 @@ urlpatterns = [
     path("annotations/IEDB/Uniprot/<str:proteinID>", iedb.source_IEDB_from_DB),
     path("annotations/dbptm/Uniprot/<str:uniprot_id>", dbtpm.source_Dbptm_from_Uniprot),
     path("annotations/dbptm/biomuta/Uniprot/<str:uniprotAc>", biomuta.source_Biomuta_from_uniprot),
+    path("annotations/dsysmap/Uniprot/<str:uniprotID>", dsysmap.source_Dsysmap_From_Uniprot),
     path("", include(router.urls)),
     path('complete/search', views.AutocompleteAPIView.as_view()),
     # Get version
