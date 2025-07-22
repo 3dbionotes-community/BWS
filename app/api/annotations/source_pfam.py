@@ -8,6 +8,7 @@ import requests
 import logging
 
 from .models import PFAMentity
+from django.forms.models import model_to_dict
 # This module includes the functions that are executed when the URL under
 # $(biourl)/api/annotations/Pfam are called 
 
@@ -21,19 +22,45 @@ def _download_PFAM_from_externalDB(uniprotID):
     url:str = f"{PFAM_URL}/protein/{uniprotID}?output=xml" # http://pfam.xfam.org/protein/PF00049?output=xml
     try:
         response = requests.get(url)
-        status = 200
-        pass
+        data = response.text
     except Exception as e:
-        status = 400
-    data = [{"status":status}, {"start":"25","end":"25","evidences":"1959628","type":"Proteolytic Cleavage"}]
+        error = {"error":f"There was an error connecting to {url}", 
+                 "error_code":response.error_code,
+                 "description": e}
+        return error
     return data
 
 def _load_PFAM_from_DB(proteinID):
-    print("Loading from DB")
-    data = PFAMentity.objects.filter(proteinID = proteinID)
-    print(data)
-    print("Loaded from DB")
-    return None if not data else data
+    """
+	Tries to load elements in the database associated with
+        uniprotAC. Returns a List with all annotations fount
+
+        Returns None if no elements found
+    """
+    query = []
+    try:
+        """
+           Queries the database to get elements with the desired uniprotID
+           Then turns it into a dict (to be able to be returned as json
+           The behaviour varies depending on the query:
+		- 1 or more results -> returned in a dict
+                - 0 results -> returns None
+                - Error -> returns None and TODO: registers the error
+	"""
+        query = PFAMentity.objects.filter(proteinID=proteinID)
+        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+	    # If no elements returned, then return None
+        # None means no results, and downstream it will be handled
+        # By connecting to the original database and caching the data locally
+        if (len(query)) == 0: 
+            query = None
+    except Exception as e:
+        # Unexpected error while connecting to the cache DB 
+        # Returning none to show no results could be retrieved
+        query = None
+        print(e)
+    finally:
+        return query
 
 def source_PFAM(request, uniprotID):
     out = _load_PFAM_from_DB(uniprotID)
