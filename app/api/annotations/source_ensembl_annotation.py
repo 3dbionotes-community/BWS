@@ -41,11 +41,11 @@ def getENSEMBLfromDB(ensembleid):
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally
         if (len(query)) == 0: 
-            query = None
+            query = {"error": f"{ensembleid} not found in DB",}
     except Exception as e:
         # Unexpected error while connecting to the cache DB 
         # Returning none to show no results could be retrieved
-        query = None
+        query =  {"error":f"Error while connecting to DB"}
     finally:
         return query
 
@@ -58,12 +58,13 @@ def save_ENSEMBL_to_DB(geneID, data):
                     end = exon['y']
                     Model = _create_ENSEMBL_annotation(geneID, type, transcript, start, end)
                     Model.save()
-    pass
 
 def _connect_to_ENSEMBL(URL, ensemblid):
         try:
             url = EnsemblURL.format(ensemblid)
+            print(url)
             response = requests.get(url)
+
         except Exception as e:
             # TODO: Handle error request
             print(e)
@@ -84,8 +85,8 @@ def _process_response_from_ENSEMBL(data: dict, id:str) -> dict:
     for element in data:
         if str(element['feature_type']) == 'transcript' and element['Parent'] == id:
             transcript[element['transcript_id']] = {'external_name': element['external_name'], 'biotype':element['biotype']}
-        # Originally this until end of loop was in another for look which is a waste of cpu cycles and time
-        # because iterated over the same element returnValue
+        # Originally this until end of loop was in another for loop which is a waste of cpu cycles and time
+        # because iterated over the same element 
         flag = False
         if (element['feature_type'] != 'exon') or (not element['Parent'] in transcript):
             # Ignoring non-exons or those elements not assigned to a known transcript

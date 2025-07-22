@@ -9,11 +9,33 @@ import requests
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 
-from .models import PhosphositeEntity
+from .models import PhosphoEntries
 
-def _load_phosphosite_from_DB(id) -> PhosphositeEntity:
-    data = PhosphositeEntity.objects.filter(proteinID=id)
-    return None if not data else data
+def _load_phosfosite_from_DB(id):
+    query = None
+    try:
+        """
+            Queries the database to get elements with the desired uniprotID
+            Then turns it into a dict (to be able to be returned as json
+            The behaviour varies depending on the query:
+		    1 or more results -> returned in a dict
+                - 0 results -> returns None
+                - Error -> returns None and TODO: registers the error
+	    """
+        query = PhosphoEntries.objects.filter(proteinID=id)
+        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+	    # If no elements returned, then return None
+        # None means no results, and downstream it will be handled
+        # By connecting to the original database and caching the data locally
+        if (len(query)) == 0: 
+            query = {"error":f"{id} not found in DB"}
+    except Exception as e:
+        print(e)
+        # Unexpected error while connecting to the cache DB 
+        # Returning none to show no results could be retrieved
+        query =  {"error":f"Error while connecting to DB"}
+    finally:
+        return query
     
 #def _save_phosposite_in_DB(id, info):
     # TO IMPLEMENT as there is no original ruby implementation on this
@@ -22,8 +44,8 @@ def _load_phosphosite_from_DB(id) -> PhosphositeEntity:
     # So there is no source of data to parse
 #    pass
 
-def get_phosphositeFromUniprot(request, ensemblid):
-    results = _load_phosposite_from_DB(ensemblid)
+def get_phosphositeFromUniprot(request, proteinID):
+    results = _load_phosfosite_from_DB(proteinID)
     if results is None:
-        results = [{"error": f"{ensemblid} not found in db"}]
+        results = [{"error": f"{proteinID} not found in db"}]
     return HttpResponse(json.dumps(results),content_type='application/json')

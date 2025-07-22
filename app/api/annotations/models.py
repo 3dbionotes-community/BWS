@@ -19,6 +19,7 @@ class biomutanentries(models.Model):
     data = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
     updated_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+    resID = models.TextField(blank=True, default="")
 
     def __str__(self):
         return self.proteinID
@@ -251,6 +252,7 @@ class uniprotmappingentries(models.Model):
 
 admin.site.register(biomutanentries)
 admin.site.register(dbptmentries)
+admin.site.register(dsysmapentries)
 admin.site.register(ebifeaturesentries)
 admin.site.register(EnsemblAnnotation)
 admin.site.register(EnsemblVariantEntry)

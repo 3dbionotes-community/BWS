@@ -10,6 +10,7 @@ from api.annotations import source_smart as smart
 from api.annotations import source_ensembl_annotation as ensembl_annotation
 from api.annotations import source_ensembl_variations as ensembl_variations
 from api.annotations import source_pdbredo as pdbredo
+from api.annotations import source_phosfosite as phosfosite
 from api.annotations import source_iedb as iedb
 from api.annotations import source_dbptm as dbtpm
 from api.annotations import source_biomuta as biomuta
@@ -38,9 +39,10 @@ urlpatterns = [
     path("annotation/ensembl/annotations/<str:ensemblid>", ensembl_annotation.getENSEMBLannotations),
     path("annotation/ensembl/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
     path("annotations/PDB_REDO/<str:pdbID>", pdbredo.source_PDBredo),
+    path("annotations/Phosphosite/Uniprot/<str:proteinID>", phosfosite.get_phosphositeFromUniprot),
     path("annotations/IEDB/Uniprot/<str:proteinID>", iedb.source_IEDB_from_DB),
     path("annotations/dbptm/Uniprot/<str:uniprot_id>", dbtpm.source_Dbptm_from_Uniprot),
-    path("annotations/dbptm/biomuta/Uniprot/<str:uniprotAc>", biomuta.source_Biomuta_from_uniprot),
+    path("annotations/dbptm/biomuta/Uniprot/<str:proteinID>", biomuta.source_Biomuta_from_uniprot),
     path("annotations/dsysmap/Uniprot/<str:uniprotID>", dsysmap.source_Dsysmap_From_Uniprot),
     path("annotations/elmdb/Uniprot/<str:uniprotID>", dsysmap.source_Dsysmap_From_Uniprot),
     path("annotations/ENSEMBL/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),

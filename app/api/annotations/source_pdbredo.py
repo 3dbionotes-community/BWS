@@ -11,6 +11,8 @@ from collections import defaultdict
 from django.http import HttpResponse
 
 from .models import PDBRedoEntry, PdbDatum
+from django.forms.models import model_to_dict
+
 
 ##############################
 #       Constants            #
@@ -29,10 +31,31 @@ COMPLETED_LOOP_DESCRIPTION:str = "Completed loop in PDB_REDO model"
 ##############################
 
 def _load_PDBRedo_from_DB(id):
-    pass
+    query = None
+    try:
+        """
+            Queries the database to get elements with the desired uniprotID
+            Then turns it into a dict (to be able to be returned as json
+            The behaviour varies depending on the query:
+		    1 or more results -> returned in a dict
+                - 0 results -> returns None
+                - Error -> returns None and TODO: registers the error
+	    """
+        query = PDBRedoEntry.objects.filter(PDBID=id)
+        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+	    # If no elements returned, then return None
+        # None means no results, and downstream it will be handled
+        # By connecting to the original database and caching the data locally
+        if (len(query)) == 0: 
+            query = {"error":f"{id} not found in DB"}
+    except Exception as e:
+        print(e)
+        # Unexpected error while connecting to the cache DB 
+        # Returning none to show no results could be retrieved
+        query =  {"error":f"Error while connecting to DB"}
+    finally:
+        return query
 
-def _save_PDBRedo_into_DB(id, data):
-    pass
 
 def _download_PDBRedo(id, PDBdata):
     url = f"{PDB_REDO_URL}{id.lower()}/{id.lower()}_final.py"
@@ -176,12 +199,14 @@ def source_PDBredo(request, pdbID):
     # to get the annotations from the local filesystem:
     #   - If out is None (meaning info is not cached), but PDBdata has info and the ID is 3 letter length
     #     we connect to an url to download the data using the PDBData and ID
+    print(re.match(r'^(\d\w{3})$', PDB))
     if (out is None) and (PDBdata is None) and (re.match(r'^(\d\w{3})$', PDB)):
         out = _download_PDBRedo(PDB, PDBdata)
+        _save_PDBRedo_into_DB(PDB, PDBdata)
     #    - Else, if ID hast 4 letter length and out has info on it, then we use the out info
     elif (re.match(r'^(\w{4})', PDB)) and (not out is None):
-        out = json.loads(out['data'])
+        out = out
     #    - Else, we return empty data info
     else:
-        out = {}
+        out = {"error":f"{pdbID} not found in database"}
     return HttpResponse(json.dumps(out),content_type='application/json')
