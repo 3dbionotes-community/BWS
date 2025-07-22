@@ -53,10 +53,9 @@ class ebifeaturesentries(models.Model):
 
 class EnsemblAnnotation(models.Model):
     geneName = models.CharField(max_length=30, blank=True, null=True, default="")
-    transcriptName = models.CharField(max_length=30, blank=True, null=True, default="")
-    start = models.IntegerField(null=True, blank=True)
-    end = models.IntegerField(null=True, blank=True)
-    type= models.CharField(max_length=30, blank=True, null=True, default="")
+    data = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+    updated_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
 
     def __str__(self):
         return f"{self.geneName}-{self.transcriptName}_{self.start}-{self.end}"
