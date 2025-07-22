@@ -4,14 +4,40 @@ import requests
 import json
 import xml.etree.ElementTree as ET
 
+from .models import dsysmapentries
 
+from django.forms.models import model_to_dict
 from django.http import HttpResponse
 
 DsysmapURL = "https://dsysmap.irbbarcelona.org/api/getMutationsForProteins?protein_ids={}"
 PATHOLOGY_TYPE = "Pathology and Biotech"
 
 def _get_Dsys_data_fromDB(uniprotID):
-    return None
+    query = None
+    try:
+        """
+            Queries the database to get elements with the desired uniprotID
+            Then turns it into a dict (to be able to be returned as json
+            The behaviour varies depending on the query:
+		    1 or more results -> returned in a dict
+                - 0 results -> returns None
+                - Error -> returns None and TODO: registers the error
+	    """
+        query = dsysmapentries.objects.filter(proteinID=uniprotID)
+        print(query)
+        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+	    # If no elements returned, then return None
+        # None means no results, and downstream it will be handled
+        # By connecting to the original database and caching the data locally
+        if (len(query)) == 0: 
+            query = {"error":f"{uniprotID} not found in DB"}
+    except Exception as e:
+        print(e)
+        # Unexpected error while connecting to the cache DB 
+        # Returning none to show no results could be retrieved
+        query =  {"error":f"Error while connecting to DB"}
+    finally:
+        return query
 
 def _save_Dsys_data_in_DB(uniprotID, data):
     pass
