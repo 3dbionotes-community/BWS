@@ -52,6 +52,16 @@ class ebifeaturesentries(models.Model):
     def __str__(self):
         return self.geneID
 
+class ElmdbData(models.Model):
+    uniprotID = models.CharField(max_length=255, blank=True, null=True, default="")
+    data = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+    updated_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
+    features_type = models.CharField(max_length=255, blank=True, null=True, default="")
+
+    def __str__(self):
+        return self.geneID
+
 class EnsemblAnnotationData(models.Model):
     geneName = models.CharField(max_length=30, blank=True, null=True, default="")
     data = models.TextField(blank=True, default="")

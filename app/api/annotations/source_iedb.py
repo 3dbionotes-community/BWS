@@ -23,6 +23,7 @@ def source_IEDB_from_DB(request, proteinID):
     with connection.cursor() as cursor:
         cursor.execute(QUERY.format(uniprotAc=proteinID))
         row = cursor.fetchall()
+        print(row)
     for element in row:
         data.append({ 'start':row['starting_position'],'end':row['ending_position'],'type':'epitope','description':row['linear_peptide_seq'],'evidence':row['epitope_id']})
     return HttpResponse(json.dumps(data), content_type='application/json')
