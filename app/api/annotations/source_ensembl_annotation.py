@@ -10,7 +10,7 @@ import requests
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 
-from .models import EnsemblAnnotation
+from .models import EnsemblAnnotationData
 
 # FOR TESTING ONLY
 EnsemblURL = "http://rest.ensembl.org/overlap/id/{}?feature=transcript;feature=exon;content-type=application/json" #Settings.GS_EnsemblServer
@@ -35,7 +35,7 @@ def getENSEMBLfromDB(ensembleid):
                 - 0 results -> returns None
                 - Error -> returns None and TODO: registers the error
 	    """
-        query = EnsemblAnnotation.objects.filter(geneName=ensembleid)
+        query = EnsemblAnnotationData.objects.filter(geneName=ensembleid)
         query = [model_to_dict(result) for result in query]
 	    # If no elements returned, then return None
         # None means no results, and downstream it will be handled
@@ -45,6 +45,7 @@ def getENSEMBLfromDB(ensembleid):
     except Exception as e:
         # Unexpected error while connecting to the cache DB 
         # Returning none to show no results could be retrieved
+        print(e)
         query =  {"error":f"Error while connecting to DB"}
     finally:
         return query

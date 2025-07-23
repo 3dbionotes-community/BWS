@@ -52,7 +52,7 @@ class ebifeaturesentries(models.Model):
     def __str__(self):
         return self.geneID
 
-class EnsemblAnnotation(models.Model):
+class EnsemblAnnotationData(models.Model):
     geneName = models.CharField(max_length=30, blank=True, null=True, default="")
     data = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=None)
@@ -254,7 +254,7 @@ admin.site.register(biomutanentries)
 admin.site.register(dbptmentries)
 admin.site.register(dsysmapentries)
 admin.site.register(ebifeaturesentries)
-admin.site.register(EnsemblAnnotation)
+admin.site.register(EnsemblAnnotationData)
 admin.site.register(EnsemblVariantEntry)
 admin.site.register(epitope)
 admin.site.register(epitope_object)
