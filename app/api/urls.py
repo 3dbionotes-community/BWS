@@ -40,7 +40,7 @@ urlpatterns = [
     path("annotations/Phosphosite/Uniprot/<str:proteinID>", phosfosite.get_phosphositeFromUniprot),
     path("annotations/IEDB/Uniprot/<str:proteinID>", iedb.source_IEDB_from_DB),
     path("annotations/dbptm/Uniprot/<str:uniprot_id>", dbtpm.source_Dbptm_from_Uniprot),
-    path("annotations/dbptm/biomuta/Uniprot/<str:proteinID>", biomuta.source_Biomuta_from_uniprot),
+    path("annotations/biomuta/Uniprot/<str:proteinID>", biomuta.source_Biomuta_from_uniprot),
     path("annotations/dsysmap/Uniprot/<str:uniprotID>", dsysmap.source_Dsysmap_From_Uniprot),
     path("annotations/elmdb/Uniprot/<str:uniprotID>", dsysmap.source_Dsysmap_From_Uniprot),
     path("annotations/ENSEMBL/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
