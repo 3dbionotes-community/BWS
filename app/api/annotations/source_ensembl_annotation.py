@@ -9,6 +9,7 @@ import requests
 
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import EnsemblAnnotationData
 
@@ -37,6 +38,7 @@ def getENSEMBLfromDB(ensembleid):
 	    """
         query = EnsemblAnnotationData.objects.filter(geneName=ensembleid)
         query = [model_to_dict(result) for result in query]
+        print(query)
 	    # If no elements returned, then return None
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally
@@ -119,4 +121,6 @@ def getENSEMBLannotations(request, ensemblid: str):
         # Once processed, save the data...
         save_ENSEMBL_to_DB(ensemblid, ensembl)
         # ...and return them to the user
-    return HttpResponse(json.dumps(ensembl),content_type='application/json')
+    result = ensembl[0]["data"]
+    print(json.loads(result))
+    return HttpResponse(result, content_type='application/json')
