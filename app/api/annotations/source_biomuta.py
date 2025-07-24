@@ -25,7 +25,7 @@ def source_Biomuta_from_uniprot(request, proteinID):
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally
         if (len(query)) == 0: 
-            query = {"error":f"{id} not found in DB"}
+            query = {"error":f"{proteinID} not found in DB"}
     except Exception as e:
         print(e)
         # Unexpected error while connecting to the cache DB 
