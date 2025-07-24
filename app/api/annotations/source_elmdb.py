@@ -10,9 +10,6 @@ from .models import ElmdbData
 
 ELM_SCRIPT = "/services/bionotes/apps/ELMDB/get_elm_data"
 
-def _save_ELM_to_DB(uniprotID, data):
-    pass
-
 def _get_ELM_from_script(uniprotID):
     return subprocess.check_output([ELM_SCRIPT, uniprotID]).decode("utf-8")
 
@@ -28,12 +25,14 @@ def _load_ELM_from_DB(uniprotID):
                 - Error -> returns None and TODO: registers the error
 	    """
         query = ElmdbData.objects.filter(uniprotID=uniprotID)
-        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+        if (not query): 
+            query = {"error": f"{uniprotID} not found in DB"}
+            return query
+        query = [model_to_dict(result)["data"] for result in query]
 	    # If no elements returned, then return None
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally
-        if (len(query)) == 0: 
-            query = {"error":f"{uniprotID} not found in DB"}
+
     except Exception as e:
         print(e)
         # Unexpected error while connecting to the cache DB 
@@ -52,12 +51,13 @@ def source_ELMDB(request, uniprotID):
             scripted_data = _get_ELM_from_script(uniprotID)
         except FileNotFoundError as FNFE:
             # This endpoint depends on a script available in ELM_SCRIPT path
-            scripted_data = {"error",f"ELM script not found at {ELM_SCRIPT}"}
+            scripted_data = {"error": "ELM script not found at {}".format(ELM_SCRIPT)}
         if (scripted_data and "error" not in scripted_data):
-            _save_ELM_to_DB(uniprotID, data)
-            data = scripted_data
+            data = json.dumps(scripted_data)
         if ("error" in data):
             status = 404
-    return HttpResponse(json.dumps(data), 
+            print(scripted_data)
+            data = json.dumps(scripted_data)
+    return HttpResponse(data, 
                         content_type='application/json',
                         status=status)

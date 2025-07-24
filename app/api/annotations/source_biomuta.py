@@ -4,6 +4,7 @@ import json
 
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import biomutanentries
 
@@ -20,7 +21,7 @@ def source_Biomuta_from_uniprot(request, proteinID):
                 - Error -> returns None and TODO: registers the error
 	    """
         query = biomutanentries.objects.filter(proteinID=proteinID)
-        query = [json.loads(model_to_dict(result)["data"]) for result in query]
+        query = [json.loads(model_to_dict(result)["data"], cls=DjangoJSONEncoder) for result in query]
 	    # If no elements returned, then return None
         # None means no results, and downstream it will be handled
         # By connecting to the original database and caching the data locally

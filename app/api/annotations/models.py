@@ -60,7 +60,7 @@ class ElmdbData(models.Model):
     features_type = models.CharField(max_length=255, blank=True, null=True, default="")
 
     def __str__(self):
-        return self.geneID
+        return self.uniprotID
 
 class EnsemblAnnotationData(models.Model):
     geneName = models.CharField(max_length=30, blank=True, null=True, default="")
