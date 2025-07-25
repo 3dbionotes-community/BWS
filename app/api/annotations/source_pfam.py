@@ -16,7 +16,8 @@ from collections import defaultdict
 # THIS IS FOR TESTING ONLY
 # real variable should be obtained from config
 
-PFAM_URL = "https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/UniProt/{}/?extra_fields=short_name&page_size=10000" #/protein/P01308/"
+PFAM_URL = "https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/UniProt/{}/?extra_fields=short_name&page_size=10000"
+PFAM_URL_GO = "https://www.ebi.ac.uk/interpro/api/protein/UniProt/{}/entry/pfam?" #/protein/P01308/"
 #LOGGER = logging.getLogger("PFAM")
 
 def _go_term_parsing(go_terms: dict) -> dict:
@@ -81,7 +82,7 @@ def _load_PFAM_from_DB(proteinID):
         query = {}
         print(e)
     finally:
-        return query
+        return query[0]
 
 def source_PFAM(request, uniprotID):
     out = _load_PFAM_from_DB(uniprotID)
