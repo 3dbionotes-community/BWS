@@ -37,15 +37,10 @@ def _load_phosfosite_from_DB(id):
     finally:
         return query
     
-#def _save_phosposite_in_DB(id, info):
-    # TO IMPLEMENT as there is no original ruby implementation on this
-    # (No upstream database)
-    # I'll leave it here if this may change in the future
-    # So there is no source of data to parse
-#    pass
-
 def get_phosphositeFromUniprot(request, proteinID):
     results = _load_phosfosite_from_DB(proteinID)
+    status = 200
     if results is None:
         results = [{"error": f"{proteinID} not found in db"}]
-    return HttpResponse(json.dumps(results),content_type='application/json')
+        status = 404
+    return HttpResponse(json.dumps(results),content_type='application/json', status=status)

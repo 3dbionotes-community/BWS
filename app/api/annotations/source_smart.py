@@ -137,7 +137,7 @@ def sourceSmartFromUniprot(request, uniprotAc):
       save_result_into_DB(out)
    if len(out) == 0:
        # No data neither in database or in the service. Send nothing
-       warn = {}
-       return HttpResponse(json.dumps(warn), content_type='application/json')
+       warn = []
+       return HttpResponse(json.dumps(warn), content_type='application/json', status=404)
    return HttpResponse(json.dumps(out), 
                          content_type='application/json')

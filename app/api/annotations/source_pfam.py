@@ -18,41 +18,38 @@ from collections import defaultdict
 
 PFAM_URL = "https://www.ebi.ac.uk/interpro/api/entry/pfam/protein/UniProt/{}/?extra_fields=short_name&page_size=10000" #/protein/P01308/"
 #LOGGER = logging.getLogger("PFAM")
+
+def _go_term_parsing(go_terms: dict) -> dict:
+    if go_terms is None: return {}
+    go = defaultdict([])
+    for element in go_terms:
+        go[element["category"]["name"]].append(element["name"])
+    return go
+
+
+
 # This function is for /api/annotations/pfam/Uniprot/<id>
 def _download_PFAM_from_externalDB(uniprotID) -> dict:
     url:str = PFAM_URL.format(uniprotID) # http://pfam.xfam.org/protein/PF00049?output=xml
-    result:dict = {}
+    pfam:list = []
     try:
         response = requests.get(url)
         data = json.loads(response.text)
     except Exception as e:
-        error = {"error":f"There was an error connecting to {url}", 
-                 "error_code":response.error_code,
-                 "description": e}
+        error = {"error":f"There was an error connecting to {url}"}
         return error
 
-    info = dict()
-    result["acc"] = data["results"][0]["metadata"]["accession"]
-    result["start"] = data["results"][0]["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["start"]
-    result["end"] = data["results"][0]["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["end"]
-    result["id"] = data["results"][0]["extra_fields"]["short_name"]
-    info["description"] = data["results"][0]["metadata"]["name"]
-    info["go"] = {"process":[],
-                      "component":[],
-                      "function":[]} 
-    go_terms = data["results"][0]["metadata"]["go_terms"]
-    if go_terms is None:
-        info["go"] = None
-    else:
-        for element in go_terms:
-            if (element["category"]["code"]) == "P":
-                info["go"]["process"].append(element["name"])
-            if (element["category"]["code"]) == "C":
-                info["go"]["component"].append(element["name"])
-            if (element["category"]["code"]) == "F":
-                info["go"]["function"].append(element["name"])
-    result["go"] = info["go"]
-    return result
+    for result in data["results"]:
+        protein = dict()
+        info = dict()
+        protein["acc"] = result["metadata"]["accession"]
+        protein["id"] = result["extra_fields"]["short_name"]
+        info["go"] = _go_term_parsing(result["metadata"]["go_terms"])
+        protein["start"] = result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["start"]
+        protein["end"] = result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["end"]
+        protein["info"] = info
+        pfam.append(protein)
+    return pfam
 
 def _load_PFAM_from_DB(proteinID):
     """

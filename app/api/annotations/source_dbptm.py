@@ -11,6 +11,7 @@ from .models import dbptmentries
 ## This funcion is called when the API endpoint is hit
 def source_Dbptm_from_Uniprot(request, uniprot_id):
     query = None
+    status_code = 200
     try:
         """
             Queries the database to get elements with the desired uniprotID
@@ -28,10 +29,14 @@ def source_Dbptm_from_Uniprot(request, uniprot_id):
         # By connecting to the original database and caching the data locally
         if (len(query)) == 0: 
             query = {"error":f"{uniprot_id} not found in DB"}
+            status_code = 404
+        else:
+            query = query[0] # Remove root list because protein ID should be unique in this table
     except Exception as e:
         print(e)
         # Unexpected error while connecting to the cache DB 
         # Returning none to show no results could be retrieved
         query =  {"error":f"Error while connecting to DB"}
+        status_code = 404
     finally:
-        return HttpResponse(json.dumps(query),content_type='application/json')
+        return HttpResponse(json.dumps(query),content_type='application/json', status=status_code)

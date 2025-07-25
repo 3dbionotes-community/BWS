@@ -2,6 +2,7 @@
 
 import requests
 import json
+import datetime
 import xml.etree.ElementTree as ET
 
 from .models import dsysmapentries
@@ -40,7 +41,12 @@ def _get_Dsys_data_fromDB(uniprotID):
         return query
 
 def _save_Dsys_data_in_DB(uniprotID, data):
-    pass
+    Model = dsysmapentries()
+    Model.proteinID = uniprotID
+    Model.data = json.dumps(data)
+    Model.created_at = datetime.datetime.now()
+    Model.updated_at = datetime.datetime.now()
+    Model.save()
 
 def _get_Dsys_data_from_uniprot(uniprotID):
     """
@@ -106,5 +112,10 @@ def source_Dsysmap_From_Uniprot(request, uniprotID):
             data = _process_xml_from_dsys_map(data)
         if len(data) > 0:
             _save_Dsys_data_in_DB(uniprotID, data)
-    data = json.dumps(data)
-    return HttpResponse(data, content_type='application/json')
+    if ("error" in data):
+        status_code = 404
+    else:
+        status_code = 200
+        data = data[0] # Remove the root list because ids should be uniq in the table
+    data = json.dumps(data) 
+    return HttpResponse(data, content_type='application/json', status=status_code)

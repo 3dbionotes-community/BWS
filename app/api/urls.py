@@ -17,6 +17,9 @@ from api.annotations import source_dbptm as dbtpm
 from api.annotations import source_biomuta as biomuta
 from api.annotations import source_dsysmap as dsysmap
 from api.annotations import source_uniprot as uniprot
+from api.annotations import source_ebi as ebi
+from api.annotations import source_mobi as mobi
+from api.annotations import source_Interpro as interpro
 from api.annotations import lrs
 
 import json
@@ -47,7 +50,10 @@ urlpatterns = [
     path("annotations/ENSEMBL/variation/<str:ensemblid>", ensembl_variations.getENSEMBLvariations),
     path("annotations/ENSEMBL/annotation/<str:ensemblid>", ensembl_annotation.getENSEMBLannotations),
     path("lengths/Uniprot/<str:uniprotAc>", uniprot.get_uniprot_length),
-    path("lengths/UniprotMulti/<str:uniprotAc>", uniprot.fetch_uniprot_multiple_sequences),
+    path("lengths/UniprotMulti/<str:uniprotAcs>", uniprot.fetch_uniprot_multiple_sequences),
+    path("annotations/EBI/<str:type>/<str:uniprotAc>", ebi.source_ebi_features),
+    #path("annotations/mobi/Uniprot/<str:uniprotAc>", mobi.source_Mobi), # ONLY READY FOR DATA ALREADY IN LOCAL DB
+    #path("annotations/interpro/Uniprot/<str:uniprotAc>", interpro.source_Interpro_from_Uniprot), # NOT READY to use
     re_path('features/variants/Genomic_Variants_CNCB/(?P<uniprot_entry>[^/.]+)/$', lrs.TrackDetailView.as_view()),
     path("", include(router.urls)),
     path('complete/search', views.AutocompleteAPIView.as_view()),

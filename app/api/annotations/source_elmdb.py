@@ -52,6 +52,7 @@ def source_ELMDB(request, uniprotID):
         except FileNotFoundError as FNFE:
             # This endpoint depends on a script available in ELM_SCRIPT path
             scripted_data = {"error": "ELM script not found at {}".format(ELM_SCRIPT)}
+            status = 404
         if (scripted_data and "error" not in scripted_data):
             data = json.dumps(scripted_data)
         if ("error" in data):

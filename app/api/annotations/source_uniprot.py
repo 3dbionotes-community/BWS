@@ -25,21 +25,25 @@ def get_uniprot_length(request, uniprotAc):
     seq = get_uniprot_sequence(uniprotAc)
     if (seq == error):
         toreturn = json.dumps([{"error": f"invalid accession number {uniprotAc}"}])
+        status = 404
     else:
         toreturn = json.dumps([{"length": len(seq)}])
-    return HttpResponse(toreturn, content_type='application/json')
+        status = 200
+    return HttpResponse(toreturn, content_type='application/json', status_code=status)
 
 def fetch_uniprot_multiple_sequences(request, uniprotAcs,sep=","):
     return_values = {}
-    fastas = []
-    accessions_ids = []
     ids = uniprotAcs.split(sep)
     print(ids)
     for id in ids:
         url = UNIPROT_URL_ID.format(id)
         response = requests.get(url)
+        if (response.status_code == 404):
+            # Comentar en el informe 
+            # Para ser coherente, si una proteina no es encontrada en uniprot, no la guarda
+            # Si ninguna es válida, devuelve un [] con código 404
+            continue
         data = json.loads(response.text)
-        print(data)
         if ("sequence" in data and "length" in data["sequence"]):
             length = data["sequence"]["length"]
         else:
@@ -57,5 +61,7 @@ def fetch_uniprot_multiple_sequences(request, uniprotAcs,sep=","):
         else:
             name = "obsolete protein?"
         return_values[id] = [length, name, gene, organism]
+    if (len(return_values)) == 0:
+        return HttpResponse(json.dumps([]), content_type='application/json', status_code=404)    
     return HttpResponse(json.dumps(return_values), content_type='application/json')
 

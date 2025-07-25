@@ -118,7 +118,6 @@ def _download_PDBRedo(id, PDBdata):
                     out[ch_1].append({'begin':start, 'end': start, 'type': "completed_loop", 
                     'descrption':COMPLETED_LOOP_DESCRIPTION, 'evidences':EVIDENCES_TEMPLATE.format(id)})
         out = json.dumps(out)
-        _save_PDBRedo_into_DB(id=id, data=out)
     pass
 
 def _get_PDBData(id):
@@ -202,11 +201,11 @@ def source_PDBredo(request, pdbID):
     print(re.match(r'^(\d\w{3})$', PDB))
     if (out is None) and (PDBdata is None) and (re.match(r'^(\d\w{3})$', PDB)):
         out = _download_PDBRedo(PDB, PDBdata)
-        _save_PDBRedo_into_DB(PDB, PDBdata)
     #    - Else, if ID hast 4 letter length and out has info on it, then we use the out info
     elif (re.match(r'^(\w{4})', PDB)) and (not out is None):
         out = out
     #    - Else, we return empty data info
     else:
         out = {"error":f"{pdbID} not found in database"}
-    return HttpResponse(json.dumps(out),content_type='application/json')
+    status_code = 404 if "error" in out else 200
+    return HttpResponse(json.dumps(out),content_type='application/json', status=status_code)

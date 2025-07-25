@@ -12,7 +12,7 @@ from django.forms.models import model_to_dict
 from .models import EnsemblVariantEntry
 
 def _load_variants_from_DB(id):
-    query = None
+    query = []
     try:
         """
             Queries the database to get elements with the desired uniprotID
@@ -39,6 +39,5 @@ def _load_variants_from_DB(id):
 
 def getENSEMBLvariations(request, ensemblid):
     variants = _load_variants_from_DB(ensemblid)
-    if variants is None:
-        pass
-    return HttpResponse(json.dumps(variants),content_type='application/json')
+    status_code = 404 if variants is [] or "error" in variants else 200
+    return HttpResponse(json.dumps(variants),content_type='application/json', status=status_code)
