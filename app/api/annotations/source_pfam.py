@@ -45,9 +45,10 @@ def _download_PFAM_from_externalDB(uniprotID) -> dict:
         info = dict()
         protein["acc"] = result["metadata"]["accession"]
         protein["id"] = result["extra_fields"]["short_name"]
+        info["description"] = result["metadata"]["name"]
         info["go"] = _go_term_parsing(result["metadata"]["go_terms"])
-        protein["start"] = result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["start"]
-        protein["end"] = result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["end"]
+        protein["start"] = str(result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["start"])
+        protein["end"] = str(result["proteins"][0]["entry_protein_locations"][0]["fragments"][0]["end"])
         protein["info"] = info
         pfam.append(protein)
     return pfam
@@ -76,13 +77,15 @@ def _load_PFAM_from_DB(proteinID):
         # By connecting to the original database and caching the data locally
         if (len(query)) == 0: 
             query = None
+        else:
+            query = query[0] # remove root list
     except Exception as e:
         # Unexpected error while connecting to the cache DB 
         # Returning none to show no results could be retrieved
         query = {}
         print(e)
     finally:
-        return query[0]
+        return query
 
 def source_PFAM(request, uniprotID):
     out = _load_PFAM_from_DB(uniprotID)
