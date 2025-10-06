@@ -7,7 +7,7 @@ djangorestframework==3.15.2
 drf-yasg
 mysqlclient
 python-dotenv
-django-debug-toolbar==3.8.1
+django-debug-toolbar==6.0.0
 django-debug-toolbar-force
 pandas
 rcsbsearchapi
