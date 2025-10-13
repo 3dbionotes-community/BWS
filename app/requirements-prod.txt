@@ -1,4 +1,4 @@
-asgiref==3.8.1
+asgiref==3.10.0
 beautifulsoup4==4.13.3
 biopython==1.83
 bs4==0.0.2
