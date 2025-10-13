@@ -3,7 +3,7 @@ beautifulsoup4==4.13.3
 biopython==1.83
 bs4==0.0.2
 certifi==2025.1.31
-charset-normalizer==3.3.2
+charset-normalizer==3.4.3
 Django==5.0.6
 django-cors-headers==4.3.1
 django-debug-toolbar==4.3.0
