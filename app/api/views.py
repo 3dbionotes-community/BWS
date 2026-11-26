@@ -23,6 +23,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Case, When, Value, BooleanField
 from haystack.query import SearchQuerySet
 import time
+from .localres_table import get_table as get_localres_table
 
 logger = logging.getLogger(__name__)
 
@@ -574,6 +575,7 @@ class AutocompleteAPIView(APIView):
                 'results': []
             })
 
+
 class LigandsSectionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = LigandEntitySerializer
 
@@ -908,20 +910,28 @@ class EmvMapQDataAveragesView(APIView):
         return Response(content, status=status.HTTP_404_NOT_FOUND)
 
 
-def _getConsensusData(db_id):
-    # <EMDB-ID>_emv_localresolution_stats.json
+def _getLocalResTable():
+    """Global consensus resolution table."""
+    return get_localres_table(
+        os.path.join(EMDB_DATA_DIR, 'statistics', LOCALRES_HISTORY_FILE))
+
+
+def _getEntryStatsJson(db_id):
+    """
+    EMV stats JSON of the entry (<EMDB-ID>_emv_localresolution_stats.json).
+    Optional: only used for sampling, version and warnings. Numbers come from the table.
+    Returns None if non existant.
+    """
     fileName = os.path.join(
-        EMDB_DATA_DIR, db_id, "%s_emv_%s.json" % (
-            db_id,
-            'localresolution_cons',
-        ))
+        EMDB_DATA_DIR, db_id, "%s_emv_localresolution_stats.json" % db_id)
     try:
         with open(fileName, 'r') as jfile:
-            jdata = json.load(jfile)
+            return json.load(jfile)
+    except FileNotFoundError:
+        return None
     except (Exception) as exc:
-        logger.exception(exc)
-        raise Exception(exc)
-    return jdata
+        logger.warning("Could not read %s: %s", fileName, exc)
+        return None
 
 
 class EmvDataLocalresConsensus(APIView):
@@ -930,61 +940,45 @@ class EmvDataLocalresConsensus(APIView):
 
     def get(self, request, **kwargs):
         """
-        Get the consensus of all EMV local resolution methods by DB ID
-        db_id : PDB | EMDB
+        Consensus of all EMV local resolution methods by EMDB ID.
+        From global table (same as ranking).
         """
+        db_id = self.kwargs.get('db_id', '').lower()
         try:
-            if 'db_id' in self.kwargs:
-                db_id = self.kwargs['db_id'].lower()
-            jdata = _getConsensusData(db_id)
-
-            jout = {
-                "resource": jdata['resource'],
-                "method_type": jdata["method_type"],
-                "software_version": jdata["software_version"],
-                "entry": jdata["entry"],
-                "data": {
-                    "sampling": jdata["data"]["sampling"],
-                    "threshold": 2,
-                },
-                "warnings": jdata["warnings"],
-                "errors": jdata["errors"]
-            }
-            metrics = []
-            for metric in jdata["data"]["metrics"]:
-                metric["unit"] = "Angstrom"
-                metrics.append(metric)
-            jout["data"]["metrics"] = metrics
-
-            return Response(jout, status=status.HTTP_200_OK)
+            table = _getLocalResTable()
         except (Exception) as exc:
             logger.exception(exc)
             return not_found_resp(db_id)
 
+        row = table.get(db_id)
+        if row is None:
+            return not_found_resp(db_id)
 
-def _getLocalResDBRank(resolution):
-    """
-        Find the position (rank) in the local resolution stats file by resolution
-    """
-    dataFile = os.path.join(EMDB_DATA_DIR, 'statistics', LOCALRES_HISTORY_FILE)
-    resolutionList = []
-    try:
-        with open(dataFile) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter='\t')
-            for row in csv_reader:
-                resolutionList.append(float(row[1]))
-    except (Exception) as exc:
-        logger.exception(exc)
-        raise Exception("Could not find %s" % dataFile)
+        stats = _getEntryStatsJson(db_id) or {}
+        stats_data = stats.get("data", {})
 
-    resolutionList.sort()
-    position = 0
-    for item in resolutionList:
-        if resolution < item:
-            break
-        else:
-            position = position + 1
-    return int(position / len(resolutionList) * 100)
+        data = {"threshold": 2}
+        if "sampling" in stats_data:
+            data["sampling"] = stats_data["sampling"]
+        data["metrics"] = [
+            {"resolutionMedian": row.median, "unit": "Angstrom"},
+            {"quartile25": row.quartile25, "unit": "Angstrom"},
+            {"quartile75": row.quartile75, "unit": "Angstrom"},
+        ]
+
+        content = {
+            "resource": "EMV-LocalResolution-Consensus",
+            "method_type": "Local Resolution Consensus",
+            "software_version": stats.get("software_version", "0.7.2"),
+            "entry": {
+                "date": table.date,
+                "volume_map": db_id,
+            },
+            "data": data,
+            "warnings": stats.get("warnings", []),
+            "errors": stats.get("errors", []),
+        }
+        return Response(content, status=status.HTTP_200_OK)
 
 
 class EmvDataLocalresRank(APIView):
@@ -993,33 +987,33 @@ class EmvDataLocalresRank(APIView):
 
     def get(self, request, **kwargs):
         """
-        Get position of query entry respect all entries in DB ordered by the consensus of all localresolution EMV
-        db_id : PDB | EMDB
+        Position of the entry with respect to the global table:
+        % of total entries with median <= evaluted entry median.
         """
+        db_id = self.kwargs.get('db_id', '').lower()
         try:
-            if 'db_id' in self.kwargs:
-                db_id = self.kwargs['db_id'].lower()
-            jdata = _getConsensusData(db_id)
-            for metric in jdata['data']['metrics']:
-                if 'resolutionMedian' in metric:
-                    resolution = metric['resolutionMedian']
-                    rank = _getLocalResDBRank(resolution)
+            table = _getLocalResTable()
         except (Exception) as exc:
             logger.exception(exc)
-            return (not_found_resp(db_id))
+            return not_found_resp(db_id)
+
+        row = table.get(db_id)
+        if row is None:
+            return not_found_resp(db_id)
 
         content = {
             "resource": "EMV-LocalResolution-DB_Rank",
             "method_type": "Local Resolution",
-            "software_version": "0.7.0",
+            "software_version": "0.7.2",
             "entry": {
-                "date": datetime.today().strftime("%Y-%m-%d"),
-                "volume_map": "%s" % (db_id),
+                "date": table.date,
+                "volume_map": db_id,
             },
             "data": {
-                "resolution": resolution,
-                "rank": rank
-            }
+                "resolution": row.median,
+                "rank": table.rank(row.median),
+                "n_entries": len(table.rows),
+            },
         }
         return Response(content, status=status.HTTP_200_OK)
 
