@@ -24,6 +24,7 @@ from django.db.models import Case, When, Value, BooleanField
 from haystack.query import SearchQuerySet
 import time
 from .localres_table import get_table as get_localres_table
+from .validation_tracks import get_chain_tracks
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,8 @@ def validate_chain_id(chain_id):
 def raise_if_path_traversal_attempt(path, filepath):
     if not os.path.commonprefix([filepath, path]) == path:
         raise Exception("Path Traversal Attempt")
+
+
 class PdbEntryAllAnnFromMapView(APIView, PdbEntryAnnFromMapsUtils):
     """
     Retrieve an annotation entry `details`.
@@ -95,16 +98,24 @@ class PdbEntryAllAnnFromMapView(APIView, PdbEntryAnnFromMapsUtils):
 
     def get(self, request, pdb_id, chain_id, modified_model=None, format=None):
         """
-        Get all map derived annotations related to one pdb_id, chain_id
+        Get all map derived annotations (per-residue validation tracks) of one pdb_id, chain_id
         """
         pdb_id = pdb_id.lower()
         if response := validate_pdb_id(pdb_id):
             return response
         if response := validate_chain_id(chain_id):
             return response
+
+        if modified_model is None:
+            # Prepared offline by `manage.py build_validation_tracks`
+            tracks = get_chain_tracks(VALIDATION_TRACKS_DIR, pdb_id, chain_id)
+            if not tracks:
+                return not_found_resp(pdb_id)
+            return Response(tracks)
+
+        # Modified models (pdb-redo, isolde): previous behaviour, from .aa.pdb files on disk
         responseData = []
-        if modified_model is not None:
-            pdb_id = pdb_id + "." + modified_model
+        pdb_id = pdb_id + "." + modified_model
         for algFamily in ANN_TYPES_DICT:
             for algoName in ANN_TYPES_DICT[algFamily]:
                 modifiedPdbFname = ANN_TYPES_DICT[algFamily][algoName] % {
@@ -123,31 +134,7 @@ class PdbEntryAllAnnFromMapView(APIView, PdbEntryAnnFromMapsUtils):
                         responseData.append(algoDataDict)
 
         if len(responseData) == 0:
-            logger.debug("Not found %s", pdb_id + "/" + chain_id)
-            #   Request EMV WebService to calculate the EMV scores
-            #   This is an asyncronous call for computation. User must query again in the future to get results
-            q_path = EMV_WS_URL + "/" + EMV_WS_PATH + "/" + pdb_id + "/" + chain_id + "/"
-            logger.debug(
-                "Requesting EMV WebService to calculate the EMV scores %s",
-                q_path)
-            try:
-                headers = {'accept': 'application/json'}
-                resp = requests.get(q_path, headers=headers, timeout=(2, 5))
-
-                logger.debug("EMV WS-query: %s", resp.url)
-                logger.debug("WS-response: %s, %s", resp.status_code,
-                             resp.json())
-                if resp:
-                    dresp = HttpResponse(
-                        content=resp.content,
-                        status=resp.status_code,
-                        content_type=resp.headers['Content-Type'])
-                    return dresp
-            except Exception as exc:
-                logger.exception(exc)
-
             return not_found_resp(pdb_id)
-
         return Response(responseData)
 
 
@@ -275,7 +262,7 @@ class FunPDBeEntryListView(APIView):
 
         return Response(entries)
 
-
+# To remove
 class FunPDBeEntryByPDBView(APIView):
     """
     Retrieve a FunPDBe JSON file for the PDB entry

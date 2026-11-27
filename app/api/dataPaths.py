@@ -10,10 +10,13 @@ PATH_TOOLS = "/tools"
 EMDB_BASEDIR = 'emdbs'
 EMDB_DATA_DIR = os.path.join(PATH_DATA, EMDB_BASEDIR)
 
-EMV_BASEDIR = 'emv'
+EMV_BASEDIR = 'emv' #To migrate ( -> VRS)
 EMV_DATA_DIR = os.path.join(PATH_DATA, EMV_BASEDIR)
 
-FUNPDBE_BASEDIR = "funpdbe"
+VALIDATION_TRACKS_BASEDIR = 'validation-tracks'
+VALIDATION_TRACKS_DIR = os.path.join(PATH_DATA, VALIDATION_TRACKS_BASEDIR)
+
+FUNPDBE_BASEDIR = "funpdbe" #To remove
 FUNPDBE_DATA_PATH = os.path.join(PATH_DATA, FUNPDBE_BASEDIR)
 
 THORN_BASEDIR = "coronavirus_structural_task_force/"
